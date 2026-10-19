@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 30 30" role="img" aria-labelledby="motif-logo-title">
+  <title id="motif-logo-title">Motif</title>
+  <path d="M15 3l10.4 6v12L15 27 4.6 21V9z" fill="none" stroke="#1A1F36" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="15" cy="15" r="5.5" fill="#FF5A2C"/>
+</svg>
