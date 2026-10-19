@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Motif – shape row</title>
-<meta name="description" content="Describe shapes in plain words, such as purple square, blue circle. Motif repeats them in a scrollable row of 50, turning and resizing them as you choose.">
+<meta name="description" content="Click shapes to build a sequence, pick a colour and size for each, and Motif repeats it along a scrollable row of 50, turning and resizing the shapes as you choose.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Motif – shape row">
-<meta property="og:description" content="Describe shapes in plain words and watch them repeat, turn and resize along a row of 50.">
+<meta property="og:description" content="Build a sequence of shapes with clicks, then watch it repeat, turn and resize along a row of 50.">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#EEEEEE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +26,7 @@ body{font-family:'Familjen Grotesk',system-ui,-apple-system,'Segoe UI',sans-seri
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* the board follows the wireframe: one wide panel on top, two panels underneath */
-.board{display:grid;grid-template-columns:minmax(300px,32%) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(250px,30dvh);gap:1px;height:100vh;height:100dvh;padding:1px;background:var(--rule)}
+.board{display:grid;grid-template-columns:minmax(340px,56%) minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(300px,42dvh);gap:1px;height:100vh;height:100dvh;padding:1px;background:var(--rule)}
 .board>section{background:var(--paper);min-width:0;min-height:0}
 
 /* top: the row of shapes */
@@ -38,6 +38,8 @@ body{font-family:'Familjen Grotesk',system-ui,-apple-system,'Segoe UI',sans-seri
 .step{width:38px;height:34px;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:6px;font:inherit;font-size:18px;font-weight:600;cursor:pointer;line-height:1}
 .step:hover{background:#F6F6F6}
 .step:active{transform:translateY(1px)}
+.row-empty{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:0 24px;text-align:center;font-size:16px;color:var(--muted);pointer-events:none}
+.row-empty[hidden]{display:none}
 
 .row{height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
 .row::-webkit-scrollbar{height:26px}
@@ -49,47 +51,74 @@ body{font-family:'Familjen Grotesk',system-ui,-apple-system,'Segoe UI',sans-seri
 .items svg{display:block;overflow:visible}
 .num{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
 
-/* bottom left: describe the shapes */
-.chat-panel{display:flex;flex-direction:column;padding:14px 16px}
-.chat-panel label.title{font-size:15px;font-weight:700;margin-bottom:8px}
-.log{flex:1;min-height:0;overflow-y:auto;display:grid;gap:8px;align-content:start;padding:2px 2px 6px}
-.msg{font-size:13.5px;line-height:1.45;max-width:94%}
-.msg p{margin:0}
-.msg ol{margin:5px 0 0;padding-left:20px}
-.msg.you{justify-self:end;background:var(--ink);color:#fff;border-radius:10px 10px 2px 10px;padding:6px 11px}
-.msg.bot{background:var(--card);border:1px solid var(--soft);border-radius:10px 10px 10px 2px;padding:7px 11px}
-.msg.bot p+p{margin-top:4px;color:var(--muted)}
-.say{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}
-.say textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:7px 10px;resize:none;min-height:48px}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:6px;font:inherit;font-weight:600;cursor:pointer}
-.btn:hover{background:#F6F6F6}
-.btn:active{transform:translateY(1px)}
-.btn.primary{background:var(--action);border-color:var(--action);color:#fff}
-.btn.primary:hover{filter:brightness(1.08)}
+/* bottom left: pick shapes and tune each one */
+.build-panel{display:flex;flex-direction:column;padding:14px 16px 12px 12px}
+.title{margin:0 0 8px 4px;font-size:15px;font-weight:700}
+.palette{display:flex;justify-content:space-evenly;margin:0 0 6px}
+.pal{flex:0 1 52px;min-width:36px;height:auto;aspect-ratio:1/1;padding:7px;border:1.5px solid var(--rule);border-radius:14px;background:var(--card);cursor:pointer;display:grid;place-items:center}
+.pal:hover{background:#F6F6F6}
+.pal:active{transform:translateY(1px)}
+.pal svg{display:block;width:100%;height:100%;overflow:visible}
+.status{margin:0 0 8px 4px;min-height:20px;color:var(--muted);font-size:13px}
+.list-wrap{flex:1;min-height:0}
+.empty{margin:6px 4px;color:var(--muted)}
+.empty[hidden]{display:none}
+
+/* the scrollbar sits on the left, as in the wireframe */
+.list{list-style:none;margin:0;padding:2px 2px 6px 10px;height:100%;overflow-y:auto;direction:rtl;scrollbar-gutter:stable;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-content:start}
+.list::-webkit-scrollbar{width:16px}
+.list::-webkit-scrollbar-track{background:#D9D9D9;border-radius:8px}
+.list::-webkit-scrollbar-thumb{background:#555;border-radius:8px;border:4px solid #D9D9D9}
+@supports not selector(::-webkit-scrollbar){.list{scrollbar-color:#555 #D9D9D9;scrollbar-width:auto}}
+.item{direction:ltr;min-width:0;display:flex;align-items:center;gap:10px;padding:7px 12px;border:1.5px solid var(--rule);border-radius:18px;background:var(--card)}
+.item.new{animation:pop .35s ease-out}
+@keyframes pop{from{transform:scale(.97);background:#FFF1EA}to{transform:none;background:var(--card)}}
+.ico{flex:none;width:40px;height:40px}
+.ico svg{display:block;width:100%;height:100%;overflow:visible}
+select,.sz{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:7px 8px}
+.color{flex:1 1 96px;min-width:0}
+.size{flex:none;display:flex;align-items:center;gap:4px}
+.sz{width:56px;text-align:center;font-variant-numeric:tabular-nums;appearance:textfield;-moz-appearance:textfield}
+.sz::-webkit-outer-spin-button,.sz::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.mini{width:30px;height:32px;padding:0;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;font-size:19px;font-weight:600;line-height:1;cursor:pointer}
+.mini:hover{background:#F6F6F6}
+.mini:active{transform:translateY(1px)}
+.del{flex:none;width:36px;height:36px;padding:0;margin-left:auto;border:1.5px solid var(--rule);border-radius:50%;background:var(--card);cursor:pointer;display:grid;place-items:center}
+.del:hover{background:#FFF1EA}
+.del svg{display:block;width:20px;height:20px}
 
 /* bottom right: controls */
 .controls-panel{display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:14px 18px}
-.ctl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:18px}
 fieldset{border:0;margin:0;padding:0;min-width:0}
 legend{padding:0;font-size:15px;font-weight:700;margin-bottom:8px}
-.ctl-grid label.field{display:grid;gap:4px;margin-bottom:10px;font-weight:500}
-select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:7px 8px;width:100%}
+label.field{display:grid;gap:4px;margin-bottom:10px;font-weight:500}
+label.field select{width:100%}
 .check{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;font-weight:500;cursor:pointer}
 .check input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--action);flex:none}
 .ctl-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--soft);padding-top:12px}
 .summary{margin:0;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:6px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:#F6F6F6}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--action);border-color:var(--action);color:#fff;flex:none}
+.btn.primary:hover{filter:brightness(1.08)}
 
 @media (max-width:860px){
   .board{grid-template-columns:1fr;grid-template-rows:minmax(300px,46dvh) auto auto;height:auto}
-  .chat-panel{min-height:340px}
-  .log{max-height:260px}
+  .list-wrap{flex:none}
+  .list{height:auto;max-height:300px}
 }
 @media (max-width:560px){
-  .ctl-grid{grid-template-columns:1fr}
   .brand small{display:none}
   .ctl-foot{flex-direction:column;align-items:stretch}
+  .item{display:grid;grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"ico color del" "ico size del";gap:6px 10px;align-items:center;padding:8px 10px}
+  .ico{grid-area:ico;width:36px;height:36px}
+  .color{grid-area:color;width:100%}
+  .size{grid-area:size}
+  .del{grid-area:del;margin-left:0}
 }
-@media (prefers-reduced-motion:reduce){.row{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){.row{scroll-behavior:auto}.item.new{animation:none}}
 </style>
 </head>
 <body>
@@ -106,18 +135,20 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
         <button type="button" class="step" id="next" aria-label="Next shape">&#8250;</button>
       </div>
     </div>
+    <p class="row-empty" id="rowEmpty" hidden>Add a shape below to start your row.</p>
     <div class="row" id="row" tabindex="0" role="region" aria-label="Row of 50 shapes. Scroll sideways to see them all.">
       <ol class="items" id="items" role="list"></ol>
     </div>
   </section>
 
-  <section class="chat-panel" aria-label="Describe your shapes">
-    <label class="title" for="say">Describe your shapes here:</label>
-    <div class="log" id="log" role="log" aria-live="polite"></div>
-    <form class="say" id="sayForm">
-      <textarea id="say" rows="2" placeholder="purple square, blue circle" spellcheck="false"></textarea>
-      <button type="submit" class="btn primary">Send</button>
-    </form>
+  <section class="build-panel" aria-label="Your shapes">
+    <h2 class="title" id="addTitle">Add a shape</h2>
+    <div class="palette" id="palette" role="group" aria-labelledby="addTitle"></div>
+    <p class="status" id="status" role="status"></p>
+    <div class="list-wrap">
+      <p class="empty" id="empty" hidden>Your list is empty. Click a shape above to add one.</p>
+      <ol class="list" id="list" aria-label="Your shapes, in row order"></ol>
+    </div>
   </section>
 
   <section class="controls-panel" aria-label="Rotation and size controls">
@@ -141,7 +172,7 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
         <legend>Options</legend>
         <label class="check"><input type="checkbox" id="optNumbers"> Number the shapes</label>
         <label class="check"><input type="checkbox" id="optOutline"> Outlines only</label>
-        <label class="check"><input type="checkbox" id="optEvery"> Turn every shape, not once per repeat</label>
+        <label class="check"><input type="checkbox" id="optEvery"> Turn every shape</label>
       </fieldset>
     </div>
     <div class="ctl-foot">
@@ -158,8 +189,8 @@ select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var
 'use strict';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
-const COUNT = 50, MAX_SPECS = 24, MAX_REPEAT = 12;
-const STORE_KEY = 'motif.row.v1';
+const COUNT = 50, MAX_ITEMS = 24, MIN_SIZE = 1, MAX_SIZE = 10, DEFAULT_SIZE = 5;
+const STORE_KEY = 'motif.row.v3';
 const TAU = Math.PI * 2;
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -178,160 +209,185 @@ function svgEl(tag, attrs) {
   return n;
 }
 
-/* ---------- vocabulary ---------- */
-const COLORS = {
-  red: '#E3242B', orange: '#FF8000', yellow: '#FFD500', green: '#00A651', teal: '#00A6A6', cyan: '#00B7EB',
-  blue: '#0000FF', navy: '#0A1F6B', purple: '#9900FF', violet: '#7F00FF', indigo: '#4B0082', pink: '#FF4DA6',
-  magenta: '#E6007E', brown: '#8B5A2B', black: '#111111', white: '#FFFFFF', gray: '#8A8F98', grey: '#8A8F98',
-  gold: '#D4A017', silver: '#C0C0C0', lime: '#7ED321', maroon: '#800020', turquoise: '#30D5C8', coral: '#FF6F61',
-  beige: '#E8D8B0', tan: '#D2B48C'
-};
-const DEFAULT_COLORS = [['purple', '#9900FF'], ['blue', '#0000FF'], ['green', '#00A651'], ['orange', '#FF8000'], ['pink', '#FF4DA6'], ['teal', '#00A6A6']];
-const SIZES = { tiny: 0.45, small: 0.65, little: 0.65, medium: 1, large: 1.3, big: 1.3, huge: 1.6, giant: 1.6 };
-const HOLLOW = new Set(['hollow', 'outlined', 'outline', 'empty', 'unfilled']);
-const NUMWORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
-const STOP = new Set(['a', 'an', 'the', 'of', 'some', 'shape', 'shapes', 'please', 'me', 'make', 'add', 'with', 'in', 'then', 'color', 'colour', 'colored', 'coloured', 'sized', 'size', 'each', 'every']);
-const ALIASES = {
-  square: 'square', box: 'square', rectangle: 'rectangle', rect: 'rectangle', circle: 'circle', dot: 'circle', ball: 'circle',
-  oval: 'oval', ellipse: 'oval', triangle: 'triangle', diamond: 'diamond', rhombus: 'diamond', pentagon: 'pentagon',
-  hexagon: 'hexagon', octagon: 'octagon', star: 'star', heart: 'heart', cross: 'cross', plus: 'cross'
-};
-const SHAPE_NAMES = ['square', 'rectangle', 'circle', 'oval', 'triangle', 'diamond', 'pentagon', 'hexagon', 'octagon', 'star', 'heart', 'cross'];
+/* ---------- the premade lists ---------- */
+const COLORS = [
+  ['Red', '#E3242B'], ['Orange', '#FF8000'], ['Yellow', '#FFD500'], ['Green', '#00A651'], ['Teal', '#00A6A6'], ['Blue', '#0000FF'],
+  ['Purple', '#9900FF'], ['Pink', '#FF4DA6'], ['Brown', '#8B5A2B'], ['Black', '#111111'], ['White', '#FFFFFF'], ['Gray', '#8A8F98']
+];
+const COLOR_HEX = {};
+COLORS.forEach(([n, h]) => { COLOR_HEX[n.toLowerCase()] = h; });
+const CYCLE = ['purple', 'blue', 'green', 'orange', 'pink', 'teal'];
 
-function shapeOf(t) {
-  if (ALIASES[t]) return ALIASES[t];
-  if (t.endsWith('es') && ALIASES[t.slice(0, -2)]) return ALIASES[t.slice(0, -2)];
-  if (t.endsWith('s') && ALIASES[t.slice(0, -1)]) return ALIASES[t.slice(0, -1)];
-  return null;
-}
-
-/* ---------- geometry (radius 1 means half the base box) ---------- */
-const reg = (n, r, a0) => Array.from({ length: n }, (_, i) => { const a = (a0 === undefined ? -Math.PI / 2 : a0) + TAU * i / n; return [r * Math.cos(a), r * Math.sin(a)]; });
-const star = (() => { const p = []; for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.48 : 1.2, a = -Math.PI / 2 + Math.PI * i / 5; p.push([r * Math.cos(a), r * Math.sin(a)]); } return p; })();
-const heart = (() => {
-  const p = [];
-  for (let i = 0; i < 72; i++) {
-    const t = TAU * i / 72;
-    p.push([16 * Math.pow(Math.sin(t), 3) / 16, (-(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) - 2.5) / 16]);
-  }
-  return p;
-})();
+const reg = (n, r, a0) => Array.from({ length: n }, (_, i) => {
+  const a = (a0 === undefined ? -Math.PI / 2 : a0) + TAU * i / n;
+  return [r * Math.cos(a), r * Math.sin(a)];
+});
 const GEOM = {
-  square: { pts: [[-1, -1], [1, -1], [1, 1], [-1, 1]] },
-  rectangle: { pts: [[-1.3, -0.8], [1.3, -0.8], [1.3, 0.8], [-1.3, 0.8]] },
   circle: { ell: [1, 1] },
-  oval: { ell: [1.3, 0.8] },
   triangle: { pts: reg(3, 1.15) },
+  square: { pts: [[-1, -1], [1, -1], [1, 1], [-1, 1]] },
   diamond: { pts: [[0, -1.25], [0.85, 0], [0, 1.25], [-0.85, 0]] },
   pentagon: { pts: reg(5, 1.05) },
   hexagon: { pts: reg(6, 1.05) },
-  octagon: { pts: reg(8, 1.05, -Math.PI / 2 + Math.PI / 8) },
-  star: { pts: star },
-  heart: { pts: heart },
-  cross: { pts: [[-0.35, -1.1], [0.35, -1.1], [0.35, -0.35], [1.1, -0.35], [1.1, 0.35], [0.35, 0.35], [0.35, 1.1], [-0.35, 1.1], [-0.35, 0.35], [-1.1, 0.35], [-1.1, -0.35], [-0.35, -0.35]] }
+  heptagon: { pts: reg(7, 1.05) },
+  octagon: { pts: reg(8, 1.05, -Math.PI / 2 + Math.PI / 8) }
 };
+const SHAPES = ['circle', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon'];
 
-/* ---------- reading what the person typed ---------- */
-function parseShapes(text) {
-  const out = { specs: [], unknown: [], truncated: false };
-  const cleaned = text.toLowerCase().replace(/[“”"'`]/g, '');
-  const segments = cleaned.split(/[,;\n]+|\s+(?:and then|then|followed by|after that|next|and)\s+|\s*(?:->|→|=>|>)\s*/);
-  for (const seg of segments) {
-    if (!seg.trim()) continue;
-    let count = 1, color = null, size = 1, sizeWord = '', hollow = false;
-    const shapes = [], unk = [];
-    const s = seg.replace(/(?:^|\s)[x×]\s*(\d+)\b/, (m, d) => { count = +d; return ' '; });
-    const toks = s.match(/[a-z]+|\d+/g) || [];
-    for (const tk of toks) {
-      if (/^\d+$/.test(tk)) { count = +tk; continue; }
-      if (NUMWORDS[tk] !== undefined) { count = NUMWORDS[tk]; continue; }
-      if (STOP.has(tk)) continue;
-      if (COLORS[tk]) { color = [tk === 'grey' ? 'gray' : tk, COLORS[tk]]; continue; }
-      if (SIZES[tk] !== undefined) { size = SIZES[tk]; sizeWord = tk === 'little' ? 'small' : tk; continue; }
-      if (HOLLOW.has(tk)) { hollow = true; continue; }
-      const sh = shapeOf(tk);
-      if (sh) { shapes.push(sh); continue; }
-      unk.push(tk);
-    }
-    if (!shapes.length) { if (toks.some(t => !STOP.has(t))) out.unknown.push(seg.trim()); continue; }
-    out.unknown.push(...unk);
-    count = clamp(count, 1, MAX_REPEAT);
-    for (const sh of shapes) for (let c = 0; c < count; c++) out.specs.push({ shape: sh, color, size, sizeWord, hollow });
-  }
-  if (out.specs.length > MAX_SPECS) { out.specs.length = MAX_SPECS; out.truncated = true; }
-  out.specs.forEach((sp, i) => {
-    const c = sp.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-    sp.colorName = c[0]; sp.hex = c[1];
-    sp.label = cap([sp.hollow ? 'hollow' : '', sp.sizeWord, sp.colorName, sp.shape].filter(Boolean).join(' '));
-  });
-  return out;
-}
-
-/* ---------- state ---------- */
-const state = { text: 'purple square, blue circle', specs: [], dir: 'cw', step: 45, size: 'same', numbers: false, outline: false, every: false };
-const refs = {};
-
-/* ---------- the row ---------- */
-function makeItem(i, spec, angleDeg, k, turnedDeg) {
-  const a = angleDeg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), g = GEOM[spec.shape];
-  const hollow = spec.hollow || state.outline;
-  const pad = 0.06;
-  let minx, maxx, miny, maxy, node;
-  const paint = {
-    fill: hollow ? 'none' : spec.hex,
-    stroke: hollow ? (spec.hex.toUpperCase() === '#FFFFFF' ? '#666666' : spec.hex) : 'rgba(0,0,0,0.55)',
-    'stroke-width': hollow ? '3' : '1.5',
-    'stroke-linejoin': 'round',
-    'vector-effect': 'non-scaling-stroke'
-  };
+/* ---------- drawing one shape ---------- */
+function build(shape, k, angleDeg, paint) {
+  const a = angleDeg * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), g = GEOM[shape];
   if (g.ell) {
     const rx = g.ell[0] * k, ry = g.ell[1] * k;
-    const hw = Math.sqrt(Math.pow(rx * ca, 2) + Math.pow(ry * sa, 2)), hh = Math.sqrt(Math.pow(rx * sa, 2) + Math.pow(ry * ca, 2));
-    minx = -hw; maxx = hw; miny = -hh; maxy = hh;
-    node = svgEl('ellipse', Object.assign({ cx: 0, cy: 0, rx: f3(rx), ry: f3(ry), transform: 'rotate(' + f3(angleDeg) + ')' }, paint));
-  } else {
-    const pts = g.pts.map(p => [k * (p[0] * ca - p[1] * sa), k * (p[0] * sa + p[1] * ca)]);
-    minx = Math.min(...pts.map(p => p[0])); maxx = Math.max(...pts.map(p => p[0]));
-    miny = Math.min(...pts.map(p => p[1])); maxy = Math.max(...pts.map(p => p[1]));
-    node = svgEl('polygon', Object.assign({ points: pts.map(p => f3(p[0]) + ',' + f3(p[1])).join(' ') }, paint));
+    const hw = Math.hypot(rx * ca, ry * sa), hh = Math.hypot(rx * sa, ry * ca);
+    return {
+      minx: -hw, maxx: hw, miny: -hh, maxy: hh,
+      node: svgEl('ellipse', Object.assign({ cx: 0, cy: 0, rx: f3(rx), ry: f3(ry), transform: 'rotate(' + f3(angleDeg) + ')' }, paint))
+    };
   }
-  const w = maxx - minx + 2 * pad, h = maxy - miny + 2 * pad;
-  const svg = svgEl('svg', { viewBox: f3(minx - pad) + ' ' + f3(miny - pad) + ' ' + f3(w) + ' ' + f3(h), 'aria-hidden': 'true', focusable: 'false' });
+  const pts = g.pts.map(p => [k * (p[0] * ca - p[1] * sa), k * (p[0] * sa + p[1] * ca)]);
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  return {
+    minx: Math.min(...xs), maxx: Math.max(...xs), miny: Math.min(...ys), maxy: Math.max(...ys),
+    node: svgEl('polygon', Object.assign({ points: pts.map(p => f3(p[0]) + ',' + f3(p[1])).join(' ') }, paint))
+  };
+}
+const paintOf = (hex, hollow) => ({
+  fill: hollow ? 'none' : hex,
+  stroke: hollow ? (hex.toUpperCase() === '#FFFFFF' ? '#666666' : hex) : 'rgba(0,0,0,0.55)',
+  'stroke-width': hollow ? '3' : '1.5',
+  'stroke-linejoin': 'round',
+  'vector-effect': 'non-scaling-stroke'
+});
+function icon(shape, paint) {
+  const b = build(shape, 1, 0, paint), h = 1.4, cx = (b.minx + b.maxx) / 2, cy = (b.miny + b.maxy) / 2;
+  const svg = svgEl('svg', { viewBox: f3(cx - h) + ' ' + f3(cy - h) + ' ' + f3(2 * h) + ' ' + f3(2 * h), 'aria-hidden': 'true', focusable: 'false' });
+  svg.append(b.node);
+  return svg;
+}
+const PALETTE_PAINT = { fill: 'none', stroke: '#1A1F36', 'stroke-width': '2', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' };
+
+/* ---------- state ---------- */
+const state = { items: [], nid: 0, dir: 'cw', step: 45, size: 'same', numbers: false, outline: false, every: false };
+const refs = {};
+const labelOf = it => cap(it.color) + ' ' + it.shape;
+const defaultItems = () => [
+  { id: ++state.nid, shape: 'square', color: 'purple', size: DEFAULT_SIZE },
+  { id: ++state.nid, shape: 'circle', color: 'blue', size: DEFAULT_SIZE }
+];
+
+/* ---------- the row ---------- */
+function makeItem(i, it, angleDeg, k, turnedDeg) {
+  const b = build(it.shape, k, angleDeg, paintOf(COLOR_HEX[it.color], state.outline));
+  const pad = 0.06, w = b.maxx - b.minx + 2 * pad, h = b.maxy - b.miny + 2 * pad;
+  const svg = svgEl('svg', { viewBox: f3(b.minx - pad) + ' ' + f3(b.miny - pad) + ' ' + f3(w) + ' ' + f3(h), 'aria-hidden': 'true', focusable: 'false' });
   svg.style.width = 'calc(var(--u) * ' + f3(w) + ')';
   svg.style.height = 'calc(var(--u) * ' + f3(h) + ')';
-  svg.append(node);
+  svg.append(b.node);
   const dirWord = state.dir === 'cw' ? 'clockwise' : 'counterclockwise';
-  const li = el('li', {}, svg, el('span', { class: 'sr-only' }, 'Item ' + (i + 1) + ': ' + spec.label.toLowerCase() + (hollow && !spec.hollow ? ', outline only' : '') + (turnedDeg ? ', turned ' + turnedDeg + ' degrees ' + dirWord : ', not turned')));
+  const li = el('li', {}, svg, el('span', { class: 'sr-only' },
+    'Item ' + (i + 1) + ': ' + labelOf(it).toLowerCase() + ', size ' + it.size + (state.outline ? ', outline only' : '') +
+    (turnedDeg ? ', turned ' + turnedDeg + ' degrees ' + dirWord : ', not turned')));
   if (state.numbers) li.append(el('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)));
   return li;
 }
-
 function renderRow() {
-  const items = refs.items, n = state.specs.length;
-  items.replaceChildren();
+  const box = refs.items, n = state.items.length;
+  box.replaceChildren();
+  refs.rowEmpty.hidden = n > 0;
   if (!n) return;
   const sign = state.dir === 'cw' ? 1 : -1;
   for (let i = 0; i < COUNT; i++) {
-    const spec = state.specs[i % n], cycle = Math.floor(i / n);
+    const it = state.items[i % n], cycle = Math.floor(i / n);
     const turns = state.every ? i : cycle;
     const t = i / (COUNT - 1);
     const sizeScale = state.size === 'dec' ? 1 - 0.75 * t : state.size === 'inc' ? 0.25 + 0.75 * t : 1;
-    items.append(makeItem(i, spec, turns * state.step * sign, sizeScale * spec.size, (turns * state.step) % 360));
+    box.append(makeItem(i, it, turns * state.step * sign, (it.size / DEFAULT_SIZE) * sizeScale, (turns * state.step) % 360));
   }
 }
 function setUnit() {
   refs.row.style.setProperty('--u', clamp(refs.row.clientHeight * 0.13, 24, 56) + 'px');
 }
 function stepItem(dir) {
-  const items = [...refs.items.children];
-  if (!items.length) return;
+  const lis = [...refs.items.children];
+  if (!lis.length) return;
   const r = refs.row.getBoundingClientRect(), mid = r.left + r.width / 2;
   let cur = 0, best = Infinity;
-  items.forEach((li, i) => { const b = li.getBoundingClientRect(), d = Math.abs(b.left + b.width / 2 - mid); if (d < best) { best = d; cur = i; } });
-  const target = items[clamp(cur + dir, 0, items.length - 1)];
+  lis.forEach((li, i) => { const b = li.getBoundingClientRect(), d = Math.abs(b.left + b.width / 2 - mid); if (d < best) { best = d; cur = i; } });
+  const tb = lis[clamp(cur + dir, 0, lis.length - 1)].getBoundingClientRect();
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const tb = target.getBoundingClientRect();
   refs.row.scrollTo({ left: refs.row.scrollLeft + (tb.left + tb.width / 2 - mid), behavior: reduce ? 'auto' : 'smooth' });
+}
+
+/* ---------- the list ---------- */
+const xIcon = () => {
+  const s = svgEl('svg', { viewBox: '0 0 20 20', 'aria-hidden': 'true', focusable: 'false' });
+  s.append(svgEl('path', { d: 'M5 5l10 10M15 5L5 15', fill: 'none', stroke: '#D93A12', 'stroke-width': '2.4', 'stroke-linecap': 'round' }));
+  return s;
+};
+function setStatus(msg) {
+  const n = state.items.length;
+  refs.status.textContent = msg || (n === 0 ? 'Click a shape to start your row.' : n >= MAX_ITEMS ? 'The list is full. Remove a shape to add another.' : n + ' of ' + MAX_ITEMS + ' shapes in your list.');
+}
+function rowEl(it, i) {
+  const name = it.shape + ' ' + (i + 1);
+  const ico = el('span', { class: 'ico' });
+  ico.append(icon(it.shape, paintOf(COLOR_HEX[it.color], false)));
+
+  const sel = el('select', { class: 'color', 'aria-label': 'Colour of ' + name }, ...COLORS.map(([n]) => el('option', { value: n.toLowerCase() }, n)));
+  sel.value = it.color;
+  sel.addEventListener('change', () => {
+    it.color = sel.value;
+    ico.replaceChildren(icon(it.shape, paintOf(COLOR_HEX[it.color], false)));
+    renderRow(); persist();
+  });
+
+  const input = el('input', { type: 'number', class: 'sz', min: MIN_SIZE, max: MAX_SIZE, step: 1, inputmode: 'numeric', 'aria-label': 'Size of ' + name + ', ' + MIN_SIZE + ' to ' + MAX_SIZE });
+  input.value = it.size;
+  const setSize = (v, rewrite) => {
+    v = clamp(Math.round(v), MIN_SIZE, MAX_SIZE);
+    it.size = v;
+    if (rewrite) input.value = v;
+    renderRow(); persist();
+  };
+  input.addEventListener('input', () => { const v = parseFloat(input.value); if (Number.isFinite(v) && v >= MIN_SIZE && v <= MAX_SIZE) setSize(v, false); });
+  input.addEventListener('change', () => { const v = parseFloat(input.value); setSize(Number.isFinite(v) ? v : it.size, true); });
+  const bump = d => () => setSize(it.size + d, true);
+  const minus = el('button', { type: 'button', class: 'mini', 'aria-label': 'Make ' + name + ' smaller', title: 'Smaller' }, '−');
+  const plus = el('button', { type: 'button', class: 'mini', 'aria-label': 'Make ' + name + ' larger', title: 'Larger' }, '+');
+  minus.addEventListener('click', bump(-1));
+  plus.addEventListener('click', bump(1));
+  const size = el('div', { class: 'size' }, minus, input, plus);
+
+  const del = el('button', { type: 'button', class: 'del', 'aria-label': 'Remove ' + name, title: 'Remove' });
+  del.append(xIcon());
+  del.addEventListener('click', () => removeItem(it.id));
+
+  return el('li', { class: 'item' }, ico, sel, size, del);
+}
+function renderList() {
+  refs.list.replaceChildren(...state.items.map(rowEl));
+  refs.empty.hidden = state.items.length > 0;
+}
+function addShape(shape) {
+  if (state.items.length >= MAX_ITEMS) { setStatus('The list is full. Remove a shape to add another.'); return; }
+  const it = { id: ++state.nid, shape, color: CYCLE[state.items.length % CYCLE.length], size: DEFAULT_SIZE };
+  state.items.push(it);
+  renderList();
+  refs.list.scrollTop = refs.list.scrollHeight;
+  refs.list.lastElementChild.classList.add('new');
+  renderRow(); persist();
+  setStatus('Added ' + (/^[aeiou]/i.test(it.color) ? 'an ' : 'a ') + labelOf(it).toLowerCase() + '. ' + state.items.length + ' of ' + MAX_ITEMS + ' shapes.');
+}
+function removeItem(id) {
+  const i = state.items.findIndex(x => x.id === id);
+  if (i < 0) return;
+  const gone = labelOf(state.items[i]).toLowerCase();
+  state.items.splice(i, 1);
+  renderList(); renderRow(); persist();
+  setStatus('Removed the ' + gone + '. ' + state.items.length + ' of ' + MAX_ITEMS + ' shapes.');
+  const next = refs.list.children[Math.min(i, state.items.length - 1)];
+  (next ? next.querySelector('.del') : refs.palette.firstElementChild).focus();
 }
 
 /* ---------- controls ---------- */
@@ -357,66 +413,46 @@ function randomize() {
   refs.row.scrollTo({ left: 0 });
 }
 
-/* ---------- the chat ---------- */
-function addMsg(kind, ...kids) {
-  const m = el('div', { class: 'msg ' + kind }, ...kids);
-  refs.log.append(m);
-  refs.log.scrollTop = refs.log.scrollHeight;
-  return m;
-}
-function groupList(specs) {
-  const ol = el('ol');
-  for (let i = 0; i < specs.length;) {
-    let j = i;
-    while (j < specs.length && specs[j].label === specs[i].label) j++;
-    ol.append(el('li', {}, specs[i].label + (j - i > 1 ? ' ×' + (j - i) : '')));
-    i = j;
-  }
-  return ol;
-}
-function send(text, silentUser) {
-  text = text.trim();
-  if (!text) return;
-  if (!silentUser) addMsg('you', text);
-  const res = parseShapes(text);
-  if (!res.specs.length) {
-    addMsg('bot', el('p', {}, 'I couldn’t find a shape in that. Try something like “purple square, blue circle”.'));
-    return;
-  }
-  state.text = text; state.specs = res.specs;
-  const bits = [el('p', {}, 'Got it: ' + res.specs.length + (res.specs.length === 1 ? ' shape' : ' shapes') + ', repeating along the row.'), groupList(res.specs)];
-  if (res.unknown.length) bits.push(el('p', {}, 'I skipped: ' + [...new Set(res.unknown)].join(', ') + '.'));
-  if (res.truncated) bits.push(el('p', {}, 'I kept the first ' + MAX_SPECS + ' shapes.'));
-  addMsg('bot', ...bits);
-  renderRow(); persist();
-  refs.row.scrollTo({ left: 0 });
-}
-
+/* ---------- saving ---------- */
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ text: state.text, dir: state.dir, step: state.step, size: state.size, numbers: state.numbers, outline: state.outline, every: state.every }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      items: state.items.map(({ shape, color, size }) => ({ shape, color, size })),
+      dir: state.dir, step: state.step, size: state.size, numbers: state.numbers, outline: state.outline, every: state.every
+    }));
   } catch (e) { /* storage unavailable */ }
 }
 function restore() {
   try {
     const d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-    if (!d) return;
-    if (typeof d.text === 'string' && d.text.trim()) state.text = d.text.slice(0, 600);
+    if (!d || !Array.isArray(d.items)) return false;
+    state.items = d.items.slice(0, MAX_ITEMS)
+      .filter(x => x && GEOM[x.shape] && COLOR_HEX[x.color])
+      .map(x => ({ id: ++state.nid, shape: x.shape, color: x.color, size: clamp(Math.round(+x.size) || DEFAULT_SIZE, MIN_SIZE, MAX_SIZE) }));
     if (d.dir === 'cw' || d.dir === 'ccw') state.dir = d.dir;
     if ([45, 90, 180].includes(d.step)) state.step = d.step;
     if (['dec', 'same', 'inc'].includes(d.size)) state.size = d.size;
     state.numbers = !!d.numbers; state.outline = !!d.outline; state.every = !!d.every;
-  } catch (e) { /* ignore bad saved data */ }
+    return true;
+  } catch (e) { return false; }
 }
 
 /* ---------- start up ---------- */
 function init() {
   Object.assign(refs, {
-    row: $('#row'), items: $('#items'), log: $('#log'), say: $('#say'), summary: $('#summary'), liveNote: $('#liveNote'),
+    row: $('#row'), items: $('#items'), rowEmpty: $('#rowEmpty'), palette: $('#palette'), list: $('#list'), empty: $('#empty'),
+    status: $('#status'), summary: $('#summary'), liveNote: $('#liveNote'),
     dir: $('#dir'), step: $('#step'), size: $('#size'), optNumbers: $('#optNumbers'), optOutline: $('#optOutline'), optEvery: $('#optEvery')
   });
-  restore();
+  if (!restore()) state.items = defaultItems();
   syncControls();
+
+  SHAPES.forEach(s => {
+    const b = el('button', { type: 'button', class: 'pal', 'aria-label': 'Add ' + s, title: 'Add ' + s });
+    b.append(icon(s, PALETTE_PAINT));
+    b.addEventListener('click', () => addShape(s));
+    refs.palette.append(b);
+  });
 
   refs.dir.addEventListener('change', () => { state.dir = refs.dir.value; changed(); });
   refs.step.addEventListener('change', () => { state.step = +refs.step.value; changed(); });
@@ -428,11 +464,6 @@ function init() {
   $('#prev').addEventListener('click', () => stepItem(-1));
   $('#next').addEventListener('click', () => stepItem(1));
 
-  $('#sayForm').addEventListener('submit', e => { e.preventDefault(); send(refs.say.value); refs.say.value = ''; refs.say.focus(); });
-  refs.say.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#sayForm').requestSubmit(); }
-  });
-
   // turn a vertical mouse wheel into sideways scrolling along the row
   refs.row.addEventListener('wheel', e => {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { refs.row.scrollLeft += e.deltaY; e.preventDefault(); }
@@ -442,11 +473,10 @@ function init() {
   else window.addEventListener('resize', setUnit);
   setUnit();
 
-  addMsg('bot',
-    el('p', {}, 'Tell me the shapes in order and I’ll repeat them along the row. Colours, sizes (small, large), counts (3 red triangles) and hollow all work.'),
-    el('p', {}, 'Shapes I know: ' + SHAPE_NAMES.join(', ') + '.'));
   updateSummary();
-  send(state.text);
+  renderList();
+  renderRow();
+  setStatus();
 }
 
 /* __EXPOSE__ */
