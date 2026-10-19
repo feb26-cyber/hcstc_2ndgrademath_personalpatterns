@@ -3,12 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Motif - A Pattern of Shapes</title>
-<link rel="icon" href="motif-logo.svg" type="image/svg">
-<meta name="description" content="Click shapes to build a sequence, pick a colour and size for each, and Motif repeats it along a scrollable row of 50, turning and resizing the shapes as you choose.">
+<title>Motif – shape row</title>
+<meta name="description" content="Click shapes to build a sequence, pick a colour and size for each, and Motif repeats it along a scrollable row of 36, turning and resizing the shapes as you choose.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Motif – shape row">
-<meta property="og:description" content="Build a sequence of shapes with clicks, then watch it repeat, turn and resize along a row of 50.">
+<meta property="og:description" content="Build a sequence of shapes with clicks, then watch it repeat, turn and resize along a row of 36.">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#EEEEEE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,6 +58,8 @@ body{font-family:'Familjen Grotesk',system-ui,-apple-system,'Segoe UI',sans-seri
 .pal{flex:0 1 52px;min-width:36px;height:auto;aspect-ratio:1/1;padding:7px;border:1.5px solid var(--rule);border-radius:14px;background:var(--card);cursor:pointer;display:grid;place-items:center}
 .pal:hover{background:#F6F6F6}
 .pal:active{transform:translateY(1px)}
+.pal[aria-disabled="true"]{opacity:.4;cursor:not-allowed}
+.pal[aria-disabled="true"]:hover,.pal[aria-disabled="true"]:active{background:var(--card);transform:none}
 .pal svg{display:block;width:100%;height:100%;overflow:visible}
 .status{margin:0 0 8px 4px;min-height:20px;color:var(--muted);font-size:13px}
 .list-wrap{flex:1;min-height:0}
@@ -90,11 +91,17 @@ select,.sz{font:inherit;color:var(--ink);background:var(--card);border:1px solid
 
 /* bottom right: controls */
 .controls-panel{display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:14px 18px}
-.ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:18px}
+.ctl-grid{display:flex;flex-wrap:wrap;gap:18px}
+.ctl-grid>fieldset{flex:1 1 140px}
+.ctl-grid>fieldset:first-child{flex:1.4 1 190px}
+.ctl-grid>fieldset:last-child{flex:1 1 150px}
 fieldset{border:0;margin:0;padding:0;min-width:0}
 legend{padding:0;font-size:15px;font-weight:700;margin-bottom:8px}
 label.field{display:grid;gap:4px;margin-bottom:10px;font-weight:500}
 label.field select{width:100%}
+.sel-wrap{position:relative;display:block}
+.dir-ico{position:absolute;left:9px;top:50%;width:18px;height:18px;margin-top:-9px;color:var(--ink);pointer-events:none}
+#dir{padding-left:35px}
 .check{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px;font-weight:500;cursor:pointer}
 .check input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--action);flex:none}
 .ctl-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--soft);padding-top:12px}
@@ -129,7 +136,7 @@ label.field select{width:100%}
     <div class="row-head">
       <div class="brand">
         <svg width="24" height="24" viewBox="0 0 30 30" aria-hidden="true"><path d="M15 3l10.4 6v12L15 27 4.6 21V9z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="15" cy="15" r="5.5" fill="#FF5A2C"/></svg>
-        Motif <small>50 shapes, scroll sideways</small>
+        Motif <small>36 shapes, scroll sideways</small>
       </div>
       <div class="steps">
         <button type="button" class="step" id="prev" aria-label="Previous shape">&#8249;</button>
@@ -137,7 +144,7 @@ label.field select{width:100%}
       </div>
     </div>
     <p class="row-empty" id="rowEmpty" hidden>Add a shape below to start your row.</p>
-    <div class="row" id="row" tabindex="0" role="region" aria-label="Row of 50 shapes. Scroll sideways to see them all.">
+    <div class="row" id="row" tabindex="0" role="region" aria-label="Row of 36 shapes. Scroll sideways to see them all.">
       <ol class="items" id="items" role="list"></ol>
     </div>
   </section>
@@ -157,7 +164,10 @@ label.field select{width:100%}
       <fieldset>
         <legend>Rotation</legend>
         <label class="field">Direction
-          <select id="dir"><option value="cw">Clockwise</option><option value="ccw">Counterclockwise</option></select>
+          <span class="sel-wrap">
+            <svg class="dir-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g id="dirArrow"><path d="M19 12A7 7 0 1 1 15.5 5.94" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.4 7.04L13.33 7.69L15.93 3.19Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></g></svg>
+            <select id="dir"><option value="cw">Clockwise</option><option value="ccw">Counterclockwise</option></select>
+          </span>
         </label>
         <label class="field">Turn per repeat
           <select id="step"><option value="45">45°</option><option value="90">90°</option><option value="180">180°</option></select>
@@ -166,12 +176,12 @@ label.field select{width:100%}
       <fieldset>
         <legend>Size</legend>
         <label class="field">Along the row
-          <select id="size"><option value="dec">Decreasing</option><option value="same">Same</option><option value="inc">Increasing</option></select>
+          <select id="size"><option value="dec">Decreasing 5%</option><option value="same">Same</option><option value="inc">Increasing 5%</option></select>
         </label>
       </fieldset>
       <fieldset>
         <legend>Options</legend>
-        <label class="check"><input type="checkbox" id="optNumbers"> Number the shapes</label>
+        <label class="check"><input type="checkbox" id="optNumbers"> Number shapes</label>
         <label class="check"><input type="checkbox" id="optOutline"> Outlines only</label>
         <label class="check"><input type="checkbox" id="optEvery"> Turn every shape</label>
       </fieldset>
@@ -190,7 +200,7 @@ label.field select{width:100%}
 'use strict';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
-const COUNT = 50, MAX_ITEMS = 24, MIN_SIZE = 1, MAX_SIZE = 10, DEFAULT_SIZE = 5;
+const COUNT = 36, MAX_ITEMS = 4, MIN_SIZE = 1, MAX_SIZE = 10, DEFAULT_SIZE = 5, STEP = 0.05;
 const STORE_KEY = 'motif.row.v3';
 const TAU = Math.PI * 2;
 const $ = s => document.querySelector(s);
@@ -234,6 +244,9 @@ const GEOM = {
   octagon: { pts: reg(8, 1.05, -Math.PI / 2 + Math.PI / 8) }
 };
 const SHAPES = ['circle', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon'];
+// furthest point from the centre, so a turned shape still fits inside the row
+const RADIUS = {};
+SHAPES.forEach(s => { const g = GEOM[s]; RADIUS[s] = g.ell ? Math.max(...g.ell) : Math.max(...g.pts.map(p => Math.hypot(p[0], p[1]))); });
 
 /* ---------- drawing one shape ---------- */
 function build(shape, k, angleDeg, paint) {
@@ -271,6 +284,7 @@ const PALETTE_PAINT = { fill: 'none', stroke: '#1A1F36', 'stroke-width': '2', 's
 /* ---------- state ---------- */
 const state = { items: [], nid: 0, dir: 'cw', step: 45, size: 'same', numbers: false, outline: false, every: false };
 const refs = {};
+let unitPx = 56;
 const labelOf = it => cap(it.color) + ' ' + it.shape;
 const defaultItems = () => [
   { id: ++state.nid, shape: 'square', color: 'purple', size: DEFAULT_SIZE },
@@ -278,7 +292,7 @@ const defaultItems = () => [
 ];
 
 /* ---------- the row ---------- */
-function makeItem(i, it, angleDeg, k, turnedDeg) {
+function makeItem(i, it, angleDeg, k, turnedDeg, scale) {
   const b = build(it.shape, k, angleDeg, paintOf(COLOR_HEX[it.color], state.outline));
   const pad = 0.06, w = b.maxx - b.minx + 2 * pad, h = b.maxy - b.miny + 2 * pad;
   const svg = svgEl('svg', { viewBox: f3(b.minx - pad) + ' ' + f3(b.miny - pad) + ' ' + f3(w) + ' ' + f3(h), 'aria-hidden': 'true', focusable: 'false' });
@@ -287,7 +301,7 @@ function makeItem(i, it, angleDeg, k, turnedDeg) {
   svg.append(b.node);
   const dirWord = state.dir === 'cw' ? 'clockwise' : 'counterclockwise';
   const li = el('li', {}, svg, el('span', { class: 'sr-only' },
-    'Item ' + (i + 1) + ': ' + labelOf(it).toLowerCase() + ', size ' + it.size + (state.outline ? ', outline only' : '') +
+    'Item ' + (i + 1) + ': ' + labelOf(it).toLowerCase() + ', size ' + it.size + (Math.abs(scale - 1) > 0.005 ? ', scaled to ' + Math.round(scale * 100) + ' percent' : '') + (state.outline ? ', outline only' : '') +
     (turnedDeg ? ', turned ' + turnedDeg + ' degrees ' + dirWord : ', not turned')));
   if (state.numbers) li.append(el('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)));
   return li;
@@ -298,16 +312,30 @@ function renderRow() {
   refs.rowEmpty.hidden = n > 0;
   if (!n) return;
   const sign = state.dir === 'cw' ? 1 : -1;
+  // each shape is 5% smaller or larger than the one before, in width and height alike
+  const factor = state.size === 'dec' ? 1 - STEP : state.size === 'inc' ? 1 + STEP : 1;
+  let cap = Infinity;
+  if (factor > 1) {
+    // growth stops once the biggest shape would no longer fit the row
+    // offsetHeight, because the sideways scrollbar comes and goes while the row is rebuilt
+    const room = Math.max(60, refs.row.offsetHeight - 26 - 112);
+    const biggest = Math.max(...state.items.map(x => 2 * RADIUS[x.shape] * (x.size / DEFAULT_SIZE)));
+    cap = Math.max(1, (room / unitPx - 0.12) / biggest);
+  }
   for (let i = 0; i < COUNT; i++) {
     const it = state.items[i % n], cycle = Math.floor(i / n);
     const turns = state.every ? i : cycle;
-    const t = i / (COUNT - 1);
-    const sizeScale = state.size === 'dec' ? 1 - 0.75 * t : state.size === 'inc' ? 0.25 + 0.75 * t : 1;
-    box.append(makeItem(i, it, turns * state.step * sign, (it.size / DEFAULT_SIZE) * sizeScale, (turns * state.step) % 360));
+    const scale = Math.min(Math.pow(factor, i), cap);
+    box.append(makeItem(i, it, turns * state.step * sign, (it.size / DEFAULT_SIZE) * scale, (turns * state.step) % 360, scale));
   }
 }
 function setUnit() {
-  refs.row.style.setProperty('--u', clamp(refs.row.clientHeight * 0.13, 24, 56) + 'px');
+  unitPx = clamp(refs.row.clientHeight * 0.13, 24, 56);
+  refs.row.style.setProperty('--u', unitPx + 'px');
+}
+function onResize() {
+  setUnit();
+  if (state.size === 'inc') renderRow();
 }
 function stepItem(dir) {
   const lis = [...refs.items.children];
@@ -328,7 +356,7 @@ const xIcon = () => {
 };
 function setStatus(msg) {
   const n = state.items.length;
-  refs.status.textContent = msg || (n === 0 ? 'Click a shape to start your row.' : n >= MAX_ITEMS ? 'The list is full. Remove a shape to add another.' : n + ' of ' + MAX_ITEMS + ' shapes in your list.');
+  refs.status.textContent = msg || (n === 0 ? 'Click a shape to start your row.' : n >= MAX_ITEMS ? 'The list is full (' + n + ' of ' + MAX_ITEMS + '). Remove a shape to add another.' : n + ' of ' + MAX_ITEMS + ' shapes in your list.');
 }
 function rowEl(it, i) {
   const name = it.shape + ' ' + (i + 1);
@@ -369,9 +397,11 @@ function rowEl(it, i) {
 function renderList() {
   refs.list.replaceChildren(...state.items.map(rowEl));
   refs.empty.hidden = state.items.length > 0;
+  const full = state.items.length >= MAX_ITEMS;
+  refs.palette.querySelectorAll('.pal').forEach(b => b.setAttribute('aria-disabled', String(full)));
 }
 function addShape(shape) {
-  if (state.items.length >= MAX_ITEMS) { setStatus('The list is full. Remove a shape to add another.'); return; }
+  if (state.items.length >= MAX_ITEMS) { setStatus(); return; }
   const it = { id: ++state.nid, shape, color: CYCLE[state.items.length % CYCLE.length], size: DEFAULT_SIZE };
   state.items.push(it);
   renderList();
@@ -395,11 +425,18 @@ function removeItem(id) {
 function updateSummary() {
   const dirWord = state.dir === 'cw' ? 'clockwise' : 'counterclockwise';
   const turn = state.every ? 'Every shape turns ' : 'Each repeat of your list turns ';
-  const size = state.size === 'dec' ? 'Sizes shrink along the row.' : state.size === 'inc' ? 'Sizes grow along the row.' : 'Sizes stay the same.';
+  const pct = Math.round(STEP * 100) + '%';
+  const size = state.size === 'dec' ? 'Each shape is ' + pct + ' smaller than the last.' : state.size === 'inc' ? 'Each shape is ' + pct + ' larger than the last.' : 'Sizes stay the same.';
   refs.summary.textContent = turn + state.step + '° ' + dirWord + '. ' + size;
+}
+function syncDirIcon() {
+  // the counterclockwise arrow is the clockwise one mirrored left to right
+  if (state.dir === 'ccw') refs.dirArrow.setAttribute('transform', 'translate(24 0) scale(-1 1)');
+  else refs.dirArrow.removeAttribute('transform');
 }
 function syncControls() {
   refs.dir.value = state.dir; refs.step.value = String(state.step); refs.size.value = state.size;
+  syncDirIcon();
   refs.optNumbers.checked = state.numbers; refs.optOutline.checked = state.outline; refs.optEvery.checked = state.every;
 }
 function changed(note) {
@@ -443,7 +480,7 @@ function init() {
   Object.assign(refs, {
     row: $('#row'), items: $('#items'), rowEmpty: $('#rowEmpty'), palette: $('#palette'), list: $('#list'), empty: $('#empty'),
     status: $('#status'), summary: $('#summary'), liveNote: $('#liveNote'),
-    dir: $('#dir'), step: $('#step'), size: $('#size'), optNumbers: $('#optNumbers'), optOutline: $('#optOutline'), optEvery: $('#optEvery')
+    dir: $('#dir'), dirArrow: $('#dirArrow'), step: $('#step'), size: $('#size'), optNumbers: $('#optNumbers'), optOutline: $('#optOutline'), optEvery: $('#optEvery')
   });
   if (!restore()) state.items = defaultItems();
   syncControls();
@@ -455,7 +492,7 @@ function init() {
     refs.palette.append(b);
   });
 
-  refs.dir.addEventListener('change', () => { state.dir = refs.dir.value; changed(); });
+  refs.dir.addEventListener('change', () => { state.dir = refs.dir.value; syncDirIcon(); changed(); });
   refs.step.addEventListener('change', () => { state.step = +refs.step.value; changed(); });
   refs.size.addEventListener('change', () => { state.size = refs.size.value; changed(); });
   refs.optNumbers.addEventListener('change', () => { state.numbers = refs.optNumbers.checked; changed(); });
@@ -470,8 +507,8 @@ function init() {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { refs.row.scrollLeft += e.deltaY; e.preventDefault(); }
   }, { passive: false });
 
-  if ('ResizeObserver' in window) new ResizeObserver(setUnit).observe(refs.row);
-  else window.addEventListener('resize', setUnit);
+  if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(refs.row);
+  else window.addEventListener('resize', onResize);
   setUnit();
 
   updateSummary();
